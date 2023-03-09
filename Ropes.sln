@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32802.440
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ropes", "Ropes\Ropes.vcxproj", "{7951677C-D2E4-4DE5-A7BE-75BDD360F8F1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7951677C-D2E4-4DE5-A7BE-75BDD360F8F1}.Debug|x64.ActiveCfg = Debug|x64
+		{7951677C-D2E4-4DE5-A7BE-75BDD360F8F1}.Debug|x64.Build.0 = Debug|x64
+		{7951677C-D2E4-4DE5-A7BE-75BDD360F8F1}.Debug|x86.ActiveCfg = Debug|Win32
+		{7951677C-D2E4-4DE5-A7BE-75BDD360F8F1}.Debug|x86.Build.0 = Debug|Win32
+		{7951677C-D2E4-4DE5-A7BE-75BDD360F8F1}.Release|x64.ActiveCfg = Release|x64
+		{7951677C-D2E4-4DE5-A7BE-75BDD360F8F1}.Release|x64.Build.0 = Release|x64
+		{7951677C-D2E4-4DE5-A7BE-75BDD360F8F1}.Release|x86.ActiveCfg = Release|Win32
+		{7951677C-D2E4-4DE5-A7BE-75BDD360F8F1}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8509F6C1-04F8-4452-86C4-AE589ECA6B36}
+	EndGlobalSection
+EndGlobal
