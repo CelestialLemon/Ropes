@@ -34,10 +34,7 @@ public:
 	sf::FloatRect getGlobalBounds();
 	sf::Vector2f getOrigin();
 	sf::Vector2f getDimmensions();
-
-	// function is called every frame
-	virtual void update(float dt, sf::RenderWindow& window);
-
+	
 	// Move changes the position of the given GameObject with the given Vector2
 	void Move(sf::Vector2f dir);
 	

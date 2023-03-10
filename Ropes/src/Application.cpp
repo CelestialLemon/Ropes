@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "Sprite.h"
+#include "PointMass.h"
 
 Application::Application(unsigned int resX, unsigned int resY): 
 m_resX(resX), 
@@ -9,9 +10,8 @@ m_window(sf::VideoMode(resX, resY), "Ropes")
 
 void Application::run() {
     
-    Sprite sprite_point;
-    sprite_point.loadTextureFromFile("./res/images/point_01.png");
-    sprite_point.setPosition(sf::Vector2f(200, 200));
+    PointMass point(1, PointMassType::KINEMATIC);
+    point.setPosition(sf::Vector2f(200, 200));
 
     while (m_window.isOpen())
     {
@@ -30,9 +30,7 @@ void Application::run() {
         
 
         m_window.clear();
-        
-        sprite_point.draw(m_window);
-        
+        point.draw(m_window);
         m_window.display();
     }
 }
