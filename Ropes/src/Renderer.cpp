@@ -26,7 +26,9 @@ sf::Vector2f Renderer::worldToScreen(sf::Vector2f worldPosition) {
 
 void Renderer::render(Sprite& sprite) {
     // get sprite position in world units
-    const sf::Vector2f worldPosition = sprite.getPosition();
+    sf::Vector2f worldPosition = sprite.getPosition();
+    // invert y-axis so that positive points upwards
+    worldPosition.y *= -1;
 
     // convert world co-ordinates to screen co-ordinates
     const sf::Vector2f screenPosition = worldToScreen(worldPosition);
@@ -35,7 +37,6 @@ void Renderer::render(Sprite& sprite) {
 
     // save currentPosition
     auto actualPosition = spriteRef.getPosition();
-
     // set temporary different position
     spriteRef.setPosition(screenPosition);
 

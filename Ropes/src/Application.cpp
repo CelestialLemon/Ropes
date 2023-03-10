@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "Sprite.h"
 #include "PointMass.h"
+#include "Renderer.h"
 
 Application::Application(unsigned int resX, unsigned int resY): 
 m_resX(resX), 
@@ -10,8 +11,10 @@ m_window(sf::VideoMode(resX, resY), "Ropes")
 
 void Application::run() {
     
+    Renderer renderer(m_window);
+
     PointMass point(1, PointMassType::KINEMATIC);
-    point.setPosition(sf::Vector2f(200, 200));
+    point.setPosition(sf::Vector2f(0, 2.0));
 
     sf::Clock clock;
     while (m_window.isOpen())
@@ -33,7 +36,7 @@ void Application::run() {
         point.update(dt);       
 
         m_window.clear();
-        point.draw(m_window);
+        renderer.render(point);
         m_window.display();
     }
 }

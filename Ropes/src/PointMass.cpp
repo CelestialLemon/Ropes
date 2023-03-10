@@ -28,7 +28,7 @@ void PointMass::updatePosition(float dt) {
 // must be called very frame for performaing updates such as physics, movements input etc
 void PointMass::update(float dt) {
     // calculate gravity force to be added every second
-    const sf::Vector2f weight(0, m_pb.getMass() * G);
+    const sf::Vector2f weight(0, m_pb.getMass() * -G);
     // add gravity force scaled by deltaTime
     m_pb.AddForce(weight * dt);
 
