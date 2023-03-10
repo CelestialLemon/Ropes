@@ -159,6 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Application.h" />
+    <ClInclude Include="src\globals.h" />
     <ClInclude Include="src\Physicsbody.h" />
     <ClInclude Include="src\PointMass.h" />
     <ClInclude Include="src\Sprite.h" />

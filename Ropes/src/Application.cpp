@@ -13,6 +13,7 @@ void Application::run() {
     PointMass point(1, PointMassType::KINEMATIC);
     point.setPosition(sf::Vector2f(200, 200));
 
+    sf::Clock clock;
     while (m_window.isOpen())
     {
         sf::Event event;
@@ -27,7 +28,9 @@ void Application::run() {
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
             m_window.close();
 
-        
+        float dt = clock.restart().asSeconds();
+        // run updates 
+        point.update(dt);       
 
         m_window.clear();
         point.draw(m_window);

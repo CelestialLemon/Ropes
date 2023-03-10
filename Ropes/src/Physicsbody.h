@@ -6,4 +6,9 @@ class PhysicsBody {
 
     public:
     PhysicsBody(float mass, sf::Vector2f initVelocity);
+
+    void AddForce(sf::Vector2f force);
+
+    sf::Vector2f getVelocity() const;
+    float getMass() const;
 };
