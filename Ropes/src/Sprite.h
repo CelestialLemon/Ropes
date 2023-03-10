@@ -27,13 +27,14 @@ public:
 	// increase the rotation by given deg
 	void rotate(float deg);
 
-	sf::Color getColor();
-	sf::Vector2f getScale();
-	sf::Vector2f getPosition();
-	float getRotation();
-	sf::FloatRect getGlobalBounds();
-	sf::Vector2f getOrigin();
-	sf::Vector2f getDimmensions();
+	sf::Color getColor() const;
+	sf::Vector2f getScale() const;
+	sf::Vector2f getPosition() const;
+	float getRotation() const;
+	sf::FloatRect getGlobalBounds() const;
+	sf::Vector2f getOrigin() const;
+	sf::Vector2f getDimmensions() const;
+	sf::Sprite& getSFMLSpriteObject();
 	
 	// Move changes the position of the given GameObject with the given Vector2
 	void Move(sf::Vector2f dir);

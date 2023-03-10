@@ -50,19 +50,23 @@ void Sprite::rotate(float deg) {
     m_sprite.rotate(deg);
 }
 
-sf::Color Sprite::getColor() { return m_sprite.getColor(); }
-sf::Vector2f Sprite::getPosition() { return m_sprite.getPosition(); };
-sf::Vector2f Sprite::getScale() {return m_sprite.getScale(); };
-float Sprite::getRotation() { return m_sprite.getRotation(); }
+sf::Color Sprite::getColor() const { return m_sprite.getColor(); }
+sf::Vector2f Sprite::getPosition() const { return m_sprite.getPosition(); };
+sf::Vector2f Sprite::getScale() const {return m_sprite.getScale(); };
+float Sprite::getRotation() const { return m_sprite.getRotation(); }
 
 // get the bounding rect of the sprite
-sf::FloatRect Sprite::getGlobalBounds() { return m_sprite.getGlobalBounds(); }
+sf::FloatRect Sprite::getGlobalBounds() const { return m_sprite.getGlobalBounds(); }
 
 // get the position of the origin of this sprite
-sf::Vector2f Sprite::getOrigin() { return m_sprite.getOrigin(); }
+sf::Vector2f Sprite::getOrigin() const { return m_sprite.getOrigin(); }
 
 // get the dimmensions of the texture of the sprite
 // doesn't factor in scale of the object
-sf::Vector2f Sprite::getDimmensions() { 
+sf::Vector2f Sprite::getDimmensions() const { 
     return sf::Vector2f(m_sprite.getTexture()->getSize().x, m_sprite.getTexture()->getSize().y); 
+}
+
+sf::Sprite& Sprite::getSFMLSpriteObject() {
+    return m_sprite;
 }
