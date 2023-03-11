@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "unordered_set": "cpp",
+        "xiosbase": "cpp",
+        "xlocale": "cpp",
+        "xstring": "cpp"
+    }
+}

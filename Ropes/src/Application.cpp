@@ -13,8 +13,15 @@ void Application::run() {
     
     Renderer renderer(m_window);
 
-    PointMass point(1, PointMassType::KINEMATIC);
-    point.setPosition(sf::Vector2f(0, 2.0));
+    const float STRING_LENGTH = 2.0f;
+
+    PointMass point1(1, PointMassType::STATIC);
+    point1.setPosition(sf::Vector2f(0, 2.0));
+
+    PointMass point2(10, PointMassType::KINEMATIC);
+    point2.setPosition(sf::Vector2f(0.0, 2.0));
+
+    point2.AddAnchor(&point1, STRING_LENGTH);
 
     sf::Clock clock;
     while (m_window.isOpen())
@@ -33,10 +40,12 @@ void Application::run() {
 
         float dt = clock.restart().asSeconds();
         // run updates 
-        point.update(dt);       
+        point1.update(dt);
+        point2.update(dt);       
 
         m_window.clear();
-        renderer.render(point);
+        renderer.render(point1);
+        renderer.render(point2);
         m_window.display();
     }
 }

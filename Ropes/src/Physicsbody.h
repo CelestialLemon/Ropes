@@ -9,6 +9,9 @@ class PhysicsBody {
 
     void AddForce(sf::Vector2f force);
 
+    // sets velocity back to zero
+    void ResetVelocity();
+
     sf::Vector2f getVelocity() const;
     float getMass() const;
 };

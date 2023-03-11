@@ -12,6 +12,10 @@ void PhysicsBody::AddForce(sf::Vector2f force) {
     m_velocity += acceleration;
 }
 
+void PhysicsBody::ResetVelocity() {
+    m_velocity = {0, 0};
+}
+
 sf::Vector2f PhysicsBody::getVelocity() const {
     return m_velocity;
 }
