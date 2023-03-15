@@ -1,5 +1,8 @@
 #include <SFML/Graphics.hpp>
 
+typedef sf::Vector2<float> vec2; // Define a new datatype called vec2 which is an alias for sf::Vector2<float>
+
+
 class PhysicsBody {
     float m_mass;
     sf::Vector2f m_velocity;
@@ -7,7 +10,7 @@ class PhysicsBody {
     public:
     PhysicsBody(float mass, sf::Vector2f initVelocity);
 
-    void AddForce(sf::Vector2f force);
+    void AddForce(vec2 force, float dt);
 
     // sets velocity back to zero
     void ResetVelocity();

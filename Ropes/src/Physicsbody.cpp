@@ -1,22 +1,24 @@
 #include "Physicsbody.h"
+#include <SFML/System.hpp>
 
-PhysicsBody::PhysicsBody(float mass, sf::Vector2f initVelocity)
+PhysicsBody::PhysicsBody(float mass, vec2 initVelocity)
 : m_mass(mass),
 m_velocity(initVelocity) 
 {}
 
-void PhysicsBody::AddForce(sf::Vector2f force) {
-    // calculate acceleration produced by force
-    const sf::Vector2f acceleration = force / m_mass;
-    // add accleration to velocity
-    m_velocity += acceleration;
+void PhysicsBody::AddForce(vec2 force, float dt) {
+    vec2 k1 = force / m_mass;                              // Calculate velocity change due to force
+    vec2 k2 = (force / m_mass) * 0.5f * dt;                // Same but half applied because we consider this over only half the time in step
+    vec2 k3 = (force / m_mass) * 0.5f * dt;                // Same as above again
+    vec2 k4 = (force / m_mass) * dt;                       // Calculate at full (dt) time step
+    m_velocity += (k1 + (2.0f * (k2 + k3)) + k4) / 6.0f;   // Calculate final velocity change over full time dt based on weighted averages of all changes.
 }
 
 void PhysicsBody::ResetVelocity() {
     m_velocity = {0, 0};
 }
 
-sf::Vector2f PhysicsBody::getVelocity() const {
+vec2 PhysicsBody::getVelocity() const {
     return m_velocity;
 }
 

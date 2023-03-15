@@ -39,7 +39,7 @@ void PointMass::updatePosition(float dt) {
         // pull towards the anchor point along the string with force equal to gravity
         if(distance > anchor->max_length) {
             m_pb.ResetVelocity();
-            m_pb.AddForce(dir * m_pb.getMass() * G);
+            m_pb.AddForce(dir * m_pb.getMass() * G, dt);
         }
     }
     // update position directly
@@ -60,7 +60,7 @@ void PointMass::update(float dt) {
     // calculate gravity force to be added every second
     const sf::Vector2f weight(0, m_pb.getMass() * -G);
     // add gravity force scaled by deltaTime
-    m_pb.AddForce(weight * dt);
+    m_pb.AddForce(weight * dt, dt);
 
     // update position depending on current velocity
     updatePosition(dt);
