@@ -3,6 +3,8 @@
 #include "PointMass.h"
 #include "Renderer.h"
 
+#include <iostream>
+
 Application::Application(unsigned int resX, unsigned int resY): 
 m_resX(resX), 
 m_resY(resY),
@@ -11,11 +13,12 @@ m_window(sf::VideoMode(resX, resY), "Ropes")
 
 void Application::run() {
 
+    m_window.setFramerateLimit(100);
     Renderer renderer(m_window);
 
-    const float K = 25; // N/m
-    const float A = 3;
-    const float M = 10000;
+    const float K = 2500; // N/m
+    const float A = 2.5f;
+    const float M = 100;
 
     sf::Vector2f Fr = {0, 0};
     
@@ -26,6 +29,8 @@ void Application::run() {
     PhysicsBody pb(M, {0, 0});
 
     sf::Clock clock;
+
+
     while (m_window.isOpen())
     {
         sf::Event event;
