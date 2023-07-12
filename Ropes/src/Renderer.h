@@ -1,6 +1,6 @@
 #include "Sprite.h"
 
-
+#include <deque>
 #include <SFML/Graphics.hpp>
 
 class Renderer {
@@ -16,4 +16,5 @@ class Renderer {
     public:
     Renderer(sf::RenderWindow& window);
     void render(Sprite& sprite);
+    void render(const sf::VertexArray& va);
 };

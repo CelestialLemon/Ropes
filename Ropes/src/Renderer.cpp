@@ -46,3 +46,16 @@ void Renderer::render(Sprite& sprite) {
     // reset position back to original
     spriteRef.setPosition(actualPosition);
 };
+
+void Renderer::render(const sf::VertexArray& va) {
+
+    sf::VertexArray val(va);
+
+    for(size_t i = 0; i < val.getVertexCount(); i++) {
+        auto& vertex = val[i];
+        vertex.position.y *= -1;
+        vertex.position = worldToScreen(vertex.position);
+    }
+
+    m_window.draw(&val[0], val.getVertexCount(), sf::LinesStrip);
+}

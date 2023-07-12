@@ -2,8 +2,10 @@
 #include "Sprite.h"
 #include "PointMass.h"
 #include "Renderer.h"
+#include "globals.h"
 
 #include <iostream>
+#include <deque>
 
 Application::Application(unsigned int resX, unsigned int resY): 
 m_resX(resX), 
@@ -11,26 +13,48 @@ m_resY(resY),
 m_window(sf::VideoMode(resX, resY), "Ropes")
 {}
 
+static float vec2Mag(vec2 vec) {
+    return sqrtf((vec.x * vec.x) + (vec.y * vec.y));
+}
+
+static vec2 normalize(vec2 vec) {
+    const float mag = vec2Mag(vec);
+    return vec2(vec.x / mag, vec.y / mag);
+}
+
+static float vec2Dot (vec2 a, vec2 b) {
+    return (a.x * b.x) + (a.y * b.y);
+}
+
+static float angleBetweenVec2(vec2 a, vec2 b) {
+    return std::atan2f(b.y, b.x) - std::atan2f(a.y, a.x);
+}
+
 void Application::run() {
 
     m_window.setFramerateLimit(100);
     Renderer renderer(m_window);
 
-    const float K = 2500; // N/m
-    const float A = 2.5f;
+    Sprite bob;
+    bob.loadTextureFromFile("./res/images/point_01.png");
+
+    Sprite anchor;
+    anchor.loadTextureFromFile("./res/images/point_01.png");
+    anchor.setColor(sf::Color::Red);
+
+    anchor.setPosition({0, 0});
+    bob.setPosition({1, -1});
+
+    sf::VertexArray trailPositions;
+
     const float M = 100;
 
-    sf::Vector2f Fr = {0, 0};
-    
-    Sprite point;
-    point.loadTextureFromFile("./res/images/point_01.png");
-    point.setPosition({A, 0});
-
-    PhysicsBody pb(M, {0, 0});
+    PhysicsBody pb(M, bob.getPosition());
 
     sf::Clock clock;
 
-
+    vec2 N({0, -1});
+    
     while (m_window.isOpen())
     {
         sf::Event event;
@@ -46,18 +70,30 @@ void Application::run() {
             m_window.close();
 
         float dt = clock.restart().asSeconds();
-        // run updates 
-        const float X = point.getPosition().x;
+        
 
-        Fr = {- K * X, 0};
+        vec2 anchorToBobVec = normalize(bob.getPosition() - anchor.getPosition());    
+        const float theta = angleBetweenVec2(N, anchorToBobVec);
 
-        pb.AddForce(Fr, dt);
+        vec2 normalToAnchorToBobVec = theta > 0 ? vec2(anchorToBobVec.y, -anchorToBobVec.x) : vec2(-anchorToBobVec.y, anchorToBobVec.x);
 
-        point.setPosition(point.getPosition() + pb.getVelocity() * dt);
+        vec2 force_gravity = vec2(0, -M * G);
+        vec2 force_tension = normalToAnchorToBobVec * -M * G * cos(theta);
+        // vec2 force = normalToAnchorToBobVec * M * G * abs(sin(theta));
+
+        pb.AddForce(force_gravity, dt);
+        // pb.AddForce(force_tension, dt);
+
+        bob.Move(pb.getVelocity() * dt);
+
+        // trail
+        trailPositions.append(sf::Vertex(bob.getPosition(), sf::Color::White));
 
         m_window.clear();
         // draw here
-        renderer.render(point);
+        renderer.render(bob);
+        renderer.render(anchor);
+        renderer.render(trailPositions);
 
         m_window.display();
     }
