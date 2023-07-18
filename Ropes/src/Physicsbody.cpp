@@ -17,6 +17,10 @@ void PhysicsBody::AddForce(vec2 force, float dt) {
     m_velocity += (force / m_mass) * dt;
 }
 
+void PhysicsBody::SetVelocity(vec2 _velocity) {
+    m_velocity = _velocity;
+}
+
 void PhysicsBody::ResetVelocity() {
     m_velocity = {0, 0};
 }

@@ -13,6 +13,8 @@ m_resY(resY),
 m_window(sf::VideoMode(resX, resY), "Ropes")
 {}
 
+const float LINK_MAX_DISTANCE = 1.0f;
+
 static float vec2Mag(vec2 vec) {
     return sqrtf((vec.x * vec.x) + (vec.y * vec.y));
 }
@@ -43,13 +45,15 @@ void Application::run() {
     anchor.setColor(sf::Color::Red);
 
     anchor.setPosition({0, 0});
-    bob.setPosition({1, -1});
+    bob.setPosition({1, 0});
+
+    bool is_paused = true;
 
     sf::VertexArray trailPositions;
 
     const float M = 100;
 
-    PhysicsBody pb(M, bob.getPosition());
+    PhysicsBody pb(M, {0, 0});
 
     sf::Clock clock;
 
@@ -69,6 +73,7 @@ void Application::run() {
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
             m_window.close();
 
+        vec2 prevPos = bob.getPosition();
         float dt = clock.restart().asSeconds();
         
 
@@ -78,13 +83,21 @@ void Application::run() {
         vec2 normalToAnchorToBobVec = theta > 0 ? vec2(anchorToBobVec.y, -anchorToBobVec.x) : vec2(-anchorToBobVec.y, anchorToBobVec.x);
 
         vec2 force_gravity = vec2(0, -M * G);
-        vec2 force_tension = normalToAnchorToBobVec * -M * G * cos(theta);
+        vec2 force_tension = anchorToBobVec * -M * G * cos(theta);
+
         // vec2 force = normalToAnchorToBobVec * M * G * abs(sin(theta));
 
         pb.AddForce(force_gravity, dt);
-        // pb.AddForce(force_tension, dt);
+        pb.AddForce(force_tension, dt);
 
         bob.Move(pb.getVelocity() * dt);
+
+        // link constraint
+        float distance = vec2Mag(bob.getPosition() - anchor.getPosition());
+        if (distance > LINK_MAX_DISTANCE) {
+            bob.setPosition(anchor.getPosition() + normalize(bob.getPosition() - anchor.getPosition()) * LINK_MAX_DISTANCE);
+            pb.SetVelocity((bob.getPosition() - prevPos) / dt);
+        }
 
         // trail
         trailPositions.append(sf::Vertex(bob.getPosition(), sf::Color::White));

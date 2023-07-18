@@ -14,6 +14,7 @@ class PhysicsBody {
 
     // sets velocity back to zero
     void ResetVelocity();
+    void SetVelocity(vec2 _veloctiy);
 
     sf::Vector2f getVelocity() const;
     float getMass() const;
