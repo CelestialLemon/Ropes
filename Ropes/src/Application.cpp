@@ -14,7 +14,7 @@ m_resY(resY),
 m_window(sf::VideoMode(resX, resY), "Ropes")
 {}
 
-const size_t NUM_OF_PMS = 3;
+const size_t NUM_OF_PMS = 5;
 
 void Application::run() {
 
@@ -34,8 +34,8 @@ void Application::run() {
             pms[i].pointMassType = PointMassType::STATIC;
         }
         else {
-            pms[i].position = {0, -0.75f * i};
-            pms[i].prevPosition = {0, -0.75f * i};
+            pms[i].position = {-0.75f * i, 0};
+            pms[i].prevPosition = {-0.75f * i, 0};
             pms[i].pointMassType = PointMassType::KINEMATIC;
         }
 
@@ -89,6 +89,13 @@ void Application::run() {
         for (size_t i = 0; i < NUM_OF_PMS; i++) {
             renderer.render(pms[i].sprite);
         }
+
+        sf::VertexArray va;
+        for(size_t i = 0; i < NUM_OF_PMS; i++) {
+            va.append(sf::Vertex(pms[i].position, sf::Color::White));
+        }
+
+        renderer.render(va);
 
         m_window.display();
     }

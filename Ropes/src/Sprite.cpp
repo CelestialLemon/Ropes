@@ -12,6 +12,7 @@ void Sprite::loadTextureFromFile(const std::string& filepath) {
 void Sprite::setSpriteTexture(const sf::Texture& texture) {
     m_texture = sf::Texture(texture);
     m_sprite.setTexture(m_texture);
+    m_sprite.setOrigin(sf::Vector2f((float)m_sprite.getTexture()->getSize().x / 2, (float)m_sprite.getTexture()->getSize().y / 2));
 }
 
 // move the sprite on the screen, works in pixel co-ordinates
