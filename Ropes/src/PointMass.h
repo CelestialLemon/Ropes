@@ -6,18 +6,6 @@
 #include <SFML/Graphics.hpp>
 #include <unordered_set>
 
-struct PointMass;
-
-struct Anchor {
-    PointMass* anchor_point;
-    float max_length;
-
-    Anchor(PointMass* _anchor_point, float _max_length) 
-    : anchor_point(_anchor_point),
-    max_length(_max_length)
-    {}
-};
-
 enum class PointMassType {
     STATIC = 0,
     KINEMATIC = 1
@@ -29,7 +17,6 @@ struct PointMass {
     vec2 position;
     vec2 prevPosition;
     vec2 velocity;
-    std::unordered_set<Anchor*> anchors;
     PointMassType pointMassType;
 
     PointMass():
@@ -51,18 +38,15 @@ struct PointMass {
         velocity += acc * dt;
     }
 
-
-    void AddAnchor(Anchor* new_anchor) {
-        anchors.insert(new_anchor);
-    }
-
     void updatePosition(float dt) {
         if (pointMassType == PointMassType::STATIC) return;
 
         prevPosition = position;
         position += velocity * dt;
-        satisfyContraints();
         sprite.setPosition(position);
+    }
+
+    void updateVelocity(float dt) {
         velocity = (position - prevPosition) / dt;
     }
 
@@ -73,28 +57,72 @@ struct PointMass {
         const float kinetic_energy = 0.5f * mass * pow(vec2Mag(velocity), 2);
         return potential_energy + kinetic_energy;
     }
+};
 
-    void satisfyContraints() {
-        for (Anchor* anchor : anchors) {
-            vec2& otherPosition = anchor->anchor_point->position;
-            const float otherMass = anchor->anchor_point->mass;
-            
-            // vector pointing from current pointmass to the anchor pointmass 
-            vec2 dir = otherPosition - position;
+struct Anchor {
+    PointMass* anchor_point_A;
+    PointMass* anchor_point_B;
+    float max_length;
+
+    Anchor(PointMass* _anchor_point_A, PointMass* _anchor_point_B, float _max_length) : 
+    anchor_point_A(_anchor_point_A),
+    anchor_point_B(_anchor_point_B),
+    max_length(_max_length)
+    {}
+};
+
+void satisfyContraints(const std::vector<Anchor>& anchors) {
+    for (Anchor anchor : anchors) {
+        PointMass* A = anchor.anchor_point_A;
+        PointMass* B = anchor.anchor_point_B;
+
+        if ((A->pointMassType == PointMassType::STATIC) &&
+            (B->pointMassType == PointMassType::STATIC))
+        { return; }
+        else 
+        {
+            vec2 dir = B->position - A->position;
             const float distance = vec2Mag(dir);
 
             dir = normalize(dir);
 
-            if (distance > anchor->max_length) {
-                if (anchor->anchor_point->pointMassType == PointMassType::STATIC) {
-                    position = position + (distance - anchor->max_length) * dir;
-                }
-                else if (anchor->anchor_point->pointMassType == PointMassType::KINEMATIC) {
-                    const float combinedMass = otherMass + mass;
-                    otherPosition += (mass / combinedMass) * (distance - anchor->max_length) * (-dir);
-                    position += (otherMass / combinedMass) * (distance - anchor->max_length) * dir;
-                } 
+            if (distance <= anchor.max_length) return;
+
+            if ((A->pointMassType == PointMassType::STATIC) &&
+                (B->pointMassType == PointMassType::KINEMATIC)) 
+            {
+                B->position += (distance - anchor.max_length) * (-dir);
+            }
+            else if ((A->pointMassType == PointMassType::KINEMATIC) &&
+                    (B->pointMassType == PointMassType::STATIC)) 
+            {
+                A->position += (distance - anchor.max_length) * dir;
+            }
+            else 
+            {
+                const float combinedMass = A->mass + B->mass;
+                A->position += (B->mass / combinedMass) * (distance - anchor.max_length) * dir;
+                B->position += (A->mass / combinedMass) * (distance - anchor.max_length) * -dir;
             }
         }
+        // vec2& otherPosition = anchor.anchor_point->position;
+        // const float otherMass = anchor.anchor_point->mass;
+        
+        // // vector pointing from current pointmass to the anchor pointmass 
+        // vec2 dir = otherPosition - position;
+        // const float distance = vec2Mag(dir);
+
+        // dir = normalize(dir);
+
+        // if (distance > anchor.max_length) {
+        //     if (anchor.anchor_point->pointMassType == PointMassType::STATIC) {
+        //         position = position + (distance - anchor.max_length) * dir;
+        //     }
+        //     else if (anchor.anchor_point->pointMassType == PointMassType::KINEMATIC) {
+        //         const float combinedMass = otherMass + mass;
+        //         otherPosition += (mass / combinedMass) * (distance - anchor.max_length) * (-dir);
+        //         position += (otherMass / combinedMass) * (distance - anchor.max_length) * dir;
+        //     } 
+        // }
     }
-};
+}

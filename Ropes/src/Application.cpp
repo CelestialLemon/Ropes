@@ -28,22 +28,23 @@ void Application::run() {
 
     for (size_t i = 0; i < NUM_OF_PMS; i++) {
         pms[i].sprite.setSpriteTexture(pointTexture);
-        pms[i].mass = 1;
+        pms[i].mass = (NUM_OF_PMS - i) * 10;
         
         if (i == 0) {
             pms[i].pointMassType = PointMassType::STATIC;
         }
         else {
-            pms[i].position = {-0.75f * i, 0};
-            pms[i].prevPosition = {-0.75f * i, 0};
+            pms[i].position = {0.75f * i, 0};
+            pms[i].prevPosition = {0.75f * i, 0};
             pms[i].pointMassType = PointMassType::KINEMATIC;
         }
 
     }
 
-    for(size_t i = 1; i < NUM_OF_PMS; i++) {
-        pms[i].AddAnchor(new Anchor(&pms[i - 1], 0.75f));
-        // pms[i].AddAnchor(new Anchor(&pms[i + 1], 0.75f));
+    std::vector<Anchor> anchors;
+    for (size_t i = 0; i < NUM_OF_PMS - 1; i++) {
+        Anchor new_anchor(&pms[i], &pms[i + 1], 0.75f);
+        anchors.push_back(new_anchor);
     }
 
     sf::Clock clock;
@@ -73,9 +74,8 @@ void Application::run() {
 
         for (size_t i = 0; i < NUM_OF_PMS; i++) {
             pms[i].updatePosition(dt);
-
-            // if (i == 1)
-            // printf("Velocity: x: %.2f, y: %.2f\n", pms[i].velocity.x, pms[i].velocity.y);
+            satisfyContraints(anchors);
+            pms[i].updateVelocity(dt);
         }
 
         float systemTotalEnergy = 0.0f;
