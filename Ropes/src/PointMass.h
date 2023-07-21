@@ -1,12 +1,20 @@
+#pragma once
 #include "Sprite.h"
-#include "Physicsbody.h"
+#include "vector_helper.h"
 
 #include <SFML/Graphics.hpp>
 #include <unordered_set>
 
+struct PointMass;
+
 struct Anchor {
-    sf::Vector2f anchor_point;
+    PointMass* anchor_point;
     float max_length;
+
+    Anchor(PointMass* _anchor_point, float _max_length) 
+    : anchor_point(_anchor_point),
+    max_length(_max_length)
+    {}
 };
 
 enum class PointMassType {
@@ -14,25 +22,63 @@ enum class PointMassType {
     KINEMATIC = 1
 };
 
-class PointMass : public Sprite {
-    private:
-    PhysicsBody m_pb;
-    PointMassType m_pointMassType;
+struct PointMass {
+    Sprite sprite;
+    float mass;
+    vec2 position;
+    vec2 prevPosition;
+    vec2 velocity;
+    std::unordered_set<Anchor*> anchors;
+    PointMassType pointMassType; 
 
-    // hold references of all the points this point is anchored to
-    std::unordered_set<Anchor*> m_anchors;
+    PointMass(float _mass, vec2 _position, PointMassType _pointMassType = PointMassType::KINEMATIC): 
+    mass(_mass), 
+    position(_position),
+    prevPosition(_position),
+    pointMassType(_pointMassType),
+    sprite(Sprite()) {}
 
-    void updatePosition(float dt);
+    void AddForce(vec2 force, float dt) {
+        vec2 acc = (force / mass);
+        velocity += acc * dt;
+    }
 
-    // default constructor not allowed
-    PointMass();
-    public:
 
-    // point mass constructor, default initial velocity is 0
-    PointMass(float mass, PointMassType pointMassType, sf::Vector2f initVelocity = sf::Vector2f(0, 0));
+    void AddAnchor(Anchor* new_anchor) {
+        anchors.insert(new_anchor);
+    }
 
-    // attach this point mass to another point mass, so that they both can't go more than string length away
-    void AddAnchor(PointMass* anchor_point, const float string_length);
+    void updatePosition(float dt) {
+        if (pointMassType == PointMassType::STATIC) return;
+        
+        prevPosition = position;
+        position += velocity * dt;
+        satisfyContraints();
+        sprite.setPosition(position);
+        velocity = (position - prevPosition) / dt;
+    }
 
-    void update(float dt);
+    void satisfyContraints() {
+        for (Anchor* anchor : anchors) {
+            vec2& otherPosition = anchor->anchor_point->position;
+            const float otherMass = anchor->anchor_point->mass;
+            
+            // vector pointing from current pointmass to the anchor pointmass 
+            vec2 dir = otherPosition - position;
+            const float distance = vec2Mag(dir);
+
+            dir = normalize(dir);
+
+            if (distance > anchor->max_length) {
+                if (anchor->anchor_point->pointMassType == PointMassType::STATIC) {
+                    position = position + (distance - anchor->max_length) * dir;
+                }
+                else if (anchor->anchor_point->pointMassType == PointMassType::KINEMATIC) {
+                    const float combinedMass = otherMass + mass;
+                    otherPosition += (mass / combinedMass) * (distance - anchor->max_length) * (-dir);
+                    position += (otherMass / combinedMass) * (distance - anchor->max_length) * dir;
+                } 
+            }
+        }
+    }
 };

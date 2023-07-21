@@ -3,6 +3,7 @@
 #include "PointMass.h"
 #include "Renderer.h"
 #include "globals.h"
+#include "vector_helper.h"
 
 #include <iostream>
 #include <deque>
@@ -15,45 +16,27 @@ m_window(sf::VideoMode(resX, resY), "Ropes")
 
 const float LINK_MAX_DISTANCE = 1.0f;
 
-static float vec2Mag(vec2 vec) {
-    return sqrtf((vec.x * vec.x) + (vec.y * vec.y));
-}
-
-static vec2 normalize(vec2 vec) {
-    const float mag = vec2Mag(vec);
-    return vec2(vec.x / mag, vec.y / mag);
-}
-
-static float vec2Dot (vec2 a, vec2 b) {
-    return (a.x * b.x) + (a.y * b.y);
-}
-
-static float angleBetweenVec2(vec2 a, vec2 b) {
-    return std::atan2f(b.y, b.x) - std::atan2f(a.y, a.x);
-}
-
 void Application::run() {
 
     m_window.setFramerateLimit(100);
     Renderer renderer(m_window);
 
-    Sprite bob;
-    bob.loadTextureFromFile("./res/images/point_01.png");
+    PointMass pm1(1, {0, 0}, PointMassType::STATIC);
+    PointMass pm2(1, {1, 0}, PointMassType::KINEMATIC);
+    PointMass pm3(1, {2, 0}, PointMassType::KINEMATIC);
 
-    Sprite anchor;
-    anchor.loadTextureFromFile("./res/images/point_01.png");
-    anchor.setColor(sf::Color::Red);
+    sf::Texture pointTexture;
+    pointTexture.loadFromFile("./res/images/point_01.png");
 
-    anchor.setPosition({0, 0});
-    bob.setPosition({1, 0});
+    pm1.sprite.setSpriteTexture(pointTexture);
+    pm2.sprite.setSpriteTexture(pointTexture);
+    pm3.sprite.setSpriteTexture(pointTexture);
 
-    bool is_paused = true;
+    pm2.AddAnchor(new Anchor(&pm1, 1.5f));
+    // pm2.AddAnchor(new Anchor(&pm1, 1.0f));
 
-    sf::VertexArray trailPositions;
-
-    const float M = 100;
-
-    PhysicsBody pb(M, {0, 0});
+    pm3.AddAnchor(new Anchor(&pm2, 1.5f));
+    // pm3.AddAnchor(new Anchor(&pm2, 1.0f));
 
     sf::Clock clock;
 
@@ -73,40 +56,22 @@ void Application::run() {
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
             m_window.close();
 
-        vec2 prevPos = bob.getPosition();
-        float dt = clock.restart().asSeconds();
-        
+        const float dt = clock.restart().asSeconds();
 
-        vec2 anchorToBobVec = normalize(bob.getPosition() - anchor.getPosition());    
-        const float theta = angleBetweenVec2(N, anchorToBobVec);
+        // game updates
+        pm1.AddForce({0, - pm1.mass * G}, dt);
+        pm2.AddForce({0, - pm2.mass * G}, dt);
+        pm3.AddForce({0, - pm3.mass * G}, dt);
 
-        vec2 normalToAnchorToBobVec = theta > 0 ? vec2(anchorToBobVec.y, -anchorToBobVec.x) : vec2(-anchorToBobVec.y, anchorToBobVec.x);
-
-        vec2 force_gravity = vec2(0, -M * G);
-        vec2 force_tension = anchorToBobVec * -M * G * cos(theta);
-
-        // vec2 force = normalToAnchorToBobVec * M * G * abs(sin(theta));
-
-        pb.AddForce(force_gravity, dt);
-        pb.AddForce(force_tension, dt);
-
-        bob.Move(pb.getVelocity() * dt);
-
-        // link constraint
-        float distance = vec2Mag(bob.getPosition() - anchor.getPosition());
-        if (distance > LINK_MAX_DISTANCE) {
-            bob.setPosition(anchor.getPosition() + normalize(bob.getPosition() - anchor.getPosition()) * LINK_MAX_DISTANCE);
-            pb.SetVelocity((bob.getPosition() - prevPos) / dt);
-        }
-
-        // trail
-        trailPositions.append(sf::Vertex(bob.getPosition(), sf::Color::White));
+        pm1.updatePosition(dt);
+        pm2.updatePosition(dt);
+        pm3.updatePosition(dt);
 
         m_window.clear();
         // draw here
-        renderer.render(bob);
-        renderer.render(anchor);
-        renderer.render(trailPositions);
+        renderer.render(pm1.sprite);
+        renderer.render(pm2.sprite);
+        renderer.render(pm3.sprite);
 
         m_window.display();
     }
