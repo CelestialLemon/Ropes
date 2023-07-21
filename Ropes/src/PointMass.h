@@ -1,6 +1,7 @@
 #pragma once
 #include "Sprite.h"
 #include "vector_helper.h"
+#include "globals.h"
 
 #include <SFML/Graphics.hpp>
 #include <unordered_set>
@@ -63,6 +64,14 @@ struct PointMass {
         satisfyContraints();
         sprite.setPosition(position);
         velocity = (position - prevPosition) / dt;
+    }
+
+    float getTotalEnergy() {
+        if (pointMassType == PointMassType::STATIC) return 0;
+
+        const float potential_energy = mass * G * position.y;
+        const float kinetic_energy = 0.5f * mass * pow(vec2Mag(velocity), 2);
+        return potential_energy + kinetic_energy;
     }
 
     void satisfyContraints() {

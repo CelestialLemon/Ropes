@@ -14,7 +14,7 @@ m_resY(resY),
 m_window(sf::VideoMode(resX, resY), "Ropes")
 {}
 
-const float LINK_MAX_DISTANCE = 1.0f;
+const size_t NUM_OF_PMS = 3;
 
 void Application::run() {
 
@@ -24,9 +24,9 @@ void Application::run() {
     sf::Texture pointTexture;
     pointTexture.loadFromFile("./res/images/point_01.png");
 
-    PointMass* pms = new PointMass[5];
+    PointMass* pms = new PointMass[NUM_OF_PMS];
 
-    for (size_t i = 0; i < 5; i++) {
+    for (size_t i = 0; i < NUM_OF_PMS; i++) {
         pms[i].sprite.setSpriteTexture(pointTexture);
         pms[i].mass = 1;
         
@@ -34,14 +34,14 @@ void Application::run() {
             pms[i].pointMassType = PointMassType::STATIC;
         }
         else {
-            pms[i].position = {0.75f * i, 0};
-            pms[i].prevPosition = {0.75f * i, 0};
+            pms[i].position = {0, -0.75f * i};
+            pms[i].prevPosition = {0, -0.75f * i};
             pms[i].pointMassType = PointMassType::KINEMATIC;
         }
 
     }
 
-    for(size_t i = 1; i < 5; i++) {
+    for(size_t i = 1; i < NUM_OF_PMS; i++) {
         pms[i].AddAnchor(new Anchor(&pms[i - 1], 0.75f));
         // pms[i].AddAnchor(new Anchor(&pms[i + 1], 0.75f));
     }
@@ -67,17 +67,26 @@ void Application::run() {
         const float dt = clock.restart().asSeconds();
 
         // game updates
-        for (size_t i = 0; i < 5; i++) {
+        for (size_t i = 0; i < NUM_OF_PMS; i++) {
             pms[i].AddForce({0, -pms[i].mass * G}, dt);
         }
 
-        for (size_t i = 0; i < 5; i++) {
+        for (size_t i = 0; i < NUM_OF_PMS; i++) {
             pms[i].updatePosition(dt);
+
+            // if (i == 1)
+            // printf("Velocity: x: %.2f, y: %.2f\n", pms[i].velocity.x, pms[i].velocity.y);
         }
 
+        float systemTotalEnergy = 0.0f;
+        for (size_t i = 0; i < NUM_OF_PMS; i++) {
+            systemTotalEnergy += pms[i].getTotalEnergy();
+        }
+        printf("System Total Energy: %.2f\n", systemTotalEnergy);
+        
         m_window.clear();
         // draw here
-        for (size_t i = 0; i < 5; i++) {
+        for (size_t i = 0; i < NUM_OF_PMS; i++) {
             renderer.render(pms[i].sprite);
         }
 
