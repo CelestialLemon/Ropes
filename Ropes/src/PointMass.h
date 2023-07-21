@@ -29,7 +29,14 @@ struct PointMass {
     vec2 prevPosition;
     vec2 velocity;
     std::unordered_set<Anchor*> anchors;
-    PointMassType pointMassType; 
+    PointMassType pointMassType;
+
+    PointMass():
+    mass(1),
+    position({0, 0}),
+    prevPosition({0, 0}),
+    velocity ({0, 0}),
+    pointMassType(PointMassType::KINEMATIC) {} 
 
     PointMass(float _mass, vec2 _position, PointMassType _pointMassType = PointMassType::KINEMATIC): 
     mass(_mass), 
@@ -50,7 +57,7 @@ struct PointMass {
 
     void updatePosition(float dt) {
         if (pointMassType == PointMassType::STATIC) return;
-        
+
         prevPosition = position;
         position += velocity * dt;
         satisfyContraints();
