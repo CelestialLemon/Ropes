@@ -17,6 +17,7 @@ struct PointMass {
     vec2 position;
     vec2 prevPosition;
     vec2 velocity;
+    vec2 force;
     PointMassType pointMassType;
 
     PointMass():
@@ -24,37 +25,38 @@ struct PointMass {
     position({0, 0}),
     prevPosition({0, 0}),
     velocity ({0, 0}),
-    pointMassType(PointMassType::KINEMATIC) {} 
+    pointMassType(PointMassType::KINEMATIC),
+    sprite(Sprite()),
+    force({0, 0}) {} 
 
     PointMass(float _mass, vec2 _position, PointMassType _pointMassType = PointMassType::KINEMATIC): 
     mass(_mass), 
     position(_position),
     prevPosition(_position),
     pointMassType(_pointMassType),
-    sprite(Sprite()) {}
+    sprite(Sprite()),
+    velocity({0, 0}),
+    force({0, 0}) {}
 
-    void AddForce(vec2 force, float dt) {
-        vec2 acc = (force / mass);
-        velocity += acc * dt;
+    void AddForce(vec2 _force) {
+        force += _force;
     }
 
     void updatePosition(float dt) {
         if (pointMassType == PointMassType::STATIC) return;
 
+        velocity = (position - prevPosition);
         prevPosition = position;
-        position += velocity * dt;
+        position = position + velocity + (force / mass) * dt * dt;
+        force = {0, 0};
         sprite.setPosition(position);
     }
 
-    void updateVelocity(float dt) {
-        velocity = (position - prevPosition) / dt;
-    }
-
-    float getTotalEnergy() {
+    float getTotalEnergy(float dt) {
         if (pointMassType == PointMassType::STATIC) return 0;
 
         const float potential_energy = mass * G * position.y;
-        const float kinetic_energy = 0.5f * mass * pow(vec2Mag(velocity), 2);
+        const float kinetic_energy = 0.5f * mass * pow(vec2Mag((position - prevPosition) / dt), 2);
         return potential_energy + kinetic_energy;
     }
 };
@@ -71,8 +73,8 @@ struct Anchor {
     {}
 };
 
-void satisfyContraints(const std::vector<Anchor>& anchors) {
-    for (Anchor anchor : anchors) {
+void satisfyContraints(std::vector<Anchor>& anchors) {
+    for (Anchor& anchor : anchors) {
         PointMass* A = anchor.anchor_point_A;
         PointMass* B = anchor.anchor_point_B;
 
@@ -105,24 +107,5 @@ void satisfyContraints(const std::vector<Anchor>& anchors) {
                 B->position += (A->mass / combinedMass) * (distance - anchor.max_length) * -dir;
             }
         }
-        // vec2& otherPosition = anchor.anchor_point->position;
-        // const float otherMass = anchor.anchor_point->mass;
-        
-        // // vector pointing from current pointmass to the anchor pointmass 
-        // vec2 dir = otherPosition - position;
-        // const float distance = vec2Mag(dir);
-
-        // dir = normalize(dir);
-
-        // if (distance > anchor.max_length) {
-        //     if (anchor.anchor_point->pointMassType == PointMassType::STATIC) {
-        //         position = position + (distance - anchor.max_length) * dir;
-        //     }
-        //     else if (anchor.anchor_point->pointMassType == PointMassType::KINEMATIC) {
-        //         const float combinedMass = otherMass + mass;
-        //         otherPosition += (mass / combinedMass) * (distance - anchor.max_length) * (-dir);
-        //         position += (otherMass / combinedMass) * (distance - anchor.max_length) * dir;
-        //     } 
-        // }
     }
 }

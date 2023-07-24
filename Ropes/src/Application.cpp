@@ -22,28 +22,29 @@ void Application::run() {
     Renderer renderer(m_window);
 
     sf::Texture pointTexture;
-    pointTexture.loadFromFile("./res/images/point_01.png");
+    pointTexture.loadFromFile("./res/images/point_02.png");
 
-    PointMass* pms = new PointMass[NUM_OF_PMS];
+    std::vector<PointMass> pms(NUM_OF_PMS);
 
     for (size_t i = 0; i < NUM_OF_PMS; i++) {
         pms[i].sprite.setSpriteTexture(pointTexture);
-        pms[i].mass = (NUM_OF_PMS - i) * 10;
+        pms[i].mass = 1;
         
         if (i == 0) {
             pms[i].pointMassType = PointMassType::STATIC;
         }
         else {
-            pms[i].position = {0.75f * i, 0};
-            pms[i].prevPosition = {0.75f * i, 0};
+            
             pms[i].pointMassType = PointMassType::KINEMATIC;
         }
+        pms[i].position = {0.3f * i, 0.3f * i};
+        pms[i].prevPosition = {0.3f * i, 0.3f * i};
 
     }
 
     std::vector<Anchor> anchors;
     for (size_t i = 0; i < NUM_OF_PMS - 1; i++) {
-        Anchor new_anchor(&pms[i], &pms[i + 1], 0.75f);
+        Anchor new_anchor(&pms[i], &pms[i + 1], 0.45f);
         anchors.push_back(new_anchor);
     }
 
@@ -66,21 +67,21 @@ void Application::run() {
             m_window.close();
 
         const float dt = clock.restart().asSeconds();
-
+        // const float dt = 0.01;
         // game updates
         for (size_t i = 0; i < NUM_OF_PMS; i++) {
-            pms[i].AddForce({0, -pms[i].mass * G}, dt);
+            pms[i].AddForce({0, -pms[i].mass * G});
         }
 
         for (size_t i = 0; i < NUM_OF_PMS; i++) {
             pms[i].updatePosition(dt);
-            satisfyContraints(anchors);
-            pms[i].updateVelocity(dt);
+            // pms[i].updateVelocity(dt);
         }
+        satisfyContraints(anchors);
 
         float systemTotalEnergy = 0.0f;
         for (size_t i = 0; i < NUM_OF_PMS; i++) {
-            systemTotalEnergy += pms[i].getTotalEnergy();
+            systemTotalEnergy += pms[i].getTotalEnergy(dt);
         }
         printf("System Total Energy: %.2f\n", systemTotalEnergy);
         
@@ -90,12 +91,12 @@ void Application::run() {
             renderer.render(pms[i].sprite);
         }
 
-        sf::VertexArray va;
-        for(size_t i = 0; i < NUM_OF_PMS; i++) {
-            va.append(sf::Vertex(pms[i].position, sf::Color::White));
+        for (const Anchor& anchor : anchors) {
+            sf::VertexArray va;
+            va.append(sf::Vertex(anchor.anchor_point_A->position));
+            va.append(sf::Vertex(anchor.anchor_point_B->position));
+            renderer.render(va);
         }
-
-        renderer.render(va);
 
         m_window.display();
     }
