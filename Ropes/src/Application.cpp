@@ -73,7 +73,7 @@ void Application::run() {
         for (size_t i = 0; i < NUM_OF_PMS; i++) {
             pms[i].AddForce({0, -pms[i].mass * G});
         }
-        // addTension(anchors);
+        addTension(anchors);
 
         for (size_t i = 0; i < NUM_OF_PMS; i++) {
             pms[i].updatePosition(dt);

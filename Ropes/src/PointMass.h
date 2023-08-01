@@ -107,9 +107,21 @@ void addTension(std::vector<Anchor>& anchors) {
     }
 }
 
+void addSatisfiedPosition(PointMass* pm, const vec2 satisfied_position, std::unordered_map<PointMass*, std::vector<vec2>>& pm_satisfied_positions) {
+    if (pm_satisfied_positions.find(pm) != pm_satisfied_positions.end()) {
+        // pointmass already exists, just push the new position to existing list
+        pm_satisfied_positions[pm].push_back(satisfied_position);
+    }
+    else {
+        // new pointmass, create new list
+        std::vector<vec2> positions {satisfied_position};
+        pm_satisfied_positions[pm] = positions;
+    }
+}
+
 void satisfyContraints(std::vector<Anchor>& anchors) {
 
-    std::unordered_map<PointMass*, std::vector<vec2>> satisfied_positions;
+    std::unordered_map<PointMass*, std::vector<vec2>> pm_satisfied_positions;
     for (Anchor& anchor : anchors) {
         PointMass* A = anchor.anchor_point_A;
         PointMass* B = anchor.anchor_point_B;
@@ -131,28 +143,14 @@ void satisfyContraints(std::vector<Anchor>& anchors) {
             {
                 const vec2 satisfied_position = B->position + (distance - anchor.max_length) * (-dir);
 
-                if (satisfied_positions.find(B) != satisfied_positions.end()) {
-                    // pointmass already exists
-                    satisfied_positions[B].push_back(satisfied_position);
-                }
-                else {
-                    std::vector<vec2> positions{satisfied_position};
-                    satisfied_positions[B] = positions;
-                }
+                addSatisfiedPosition(B, satisfied_position, pm_satisfied_positions);
             }
             else if ((A->pointMassType == PointMassType::KINEMATIC) &&
                     (B->pointMassType == PointMassType::STATIC)) 
             {
                 const vec2 satisfied_position = A->position + (distance - anchor.max_length) * dir;
                 
-                if (satisfied_positions.find(A) != satisfied_positions.end()) {
-                    // pointmass already exists
-                    satisfied_positions[A].push_back(satisfied_position);
-                }
-                else {
-                    std::vector<vec2> positions{satisfied_position};
-                    satisfied_positions[A] = positions;
-                }
+                addSatisfiedPosition(A, satisfied_position, pm_satisfied_positions);
             }
             else 
             {
@@ -160,29 +158,14 @@ void satisfyContraints(std::vector<Anchor>& anchors) {
                 const vec2 satisfied_position_A = A->position + (B->mass / combinedMass) * (distance - anchor.max_length) * dir;
                 const vec2 satisfied_position_B = B->position + (A->mass / combinedMass) * (distance - anchor.max_length) * -dir;
 
-                if (satisfied_positions.find(A) != satisfied_positions.end()) {
-                    // pointmass already exists
-                    satisfied_positions[A].push_back(satisfied_position_A);
-                }
-                else {
-                    std::vector<vec2> positions{satisfied_position_A};
-                    satisfied_positions[A] = positions;
-                }
-
-                if (satisfied_positions.find(B) != satisfied_positions.end()) {
-                    // pointmass already exists
-                    satisfied_positions[B].push_back(satisfied_position_B);
-                }
-                else {
-                    std::vector<vec2> positions{satisfied_position_B};
-                    satisfied_positions[B] = positions;
-                }
+                addSatisfiedPosition(A, satisfied_position_A, pm_satisfied_positions);
+                addSatisfiedPosition(B, satisfied_position_B, pm_satisfied_positions);
             }
         }
     }
 
     // std::cout << "size of map: " << satisfied_positions.size() << std::endl;
-    for(auto& satisfied_position: satisfied_positions) {
+    for(auto& satisfied_position: pm_satisfied_positions) {
         vec2 average_position = {0, 0};
 
         for(const vec2& position: satisfied_position.second) {
