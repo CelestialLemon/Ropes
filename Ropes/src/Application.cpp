@@ -14,15 +14,15 @@ m_resY(resY),
 m_window(sf::VideoMode(resX, resY), "Ropes")
 {}
 
-const size_t NUM_OF_PMS = 5;
+const size_t NUM_OF_PMS = 25;
 
 void Application::run() {
 
-    m_window.setFramerateLimit(100);
+    m_window.setFramerateLimit(120);
     Renderer renderer(m_window);
 
     sf::Texture pointTexture;
-    pointTexture.loadFromFile("./res/images/point_02.png");
+    pointTexture.loadFromFile("./res/images/point_03.png");
 
     std::vector<PointMass> pms(NUM_OF_PMS);
 
@@ -36,14 +36,14 @@ void Application::run() {
         else {
             pms[i].pointMassType = PointMassType::KINEMATIC;
         }
-        pms[i].position = {0.3f * i, 0.0f * i};
-        pms[i].prevPosition = {0.3f * i, 0.0f * i};
+        pms[i].position = {0.18f * i, 3.0f};
+        pms[i].prevPosition = {0.18f * i, 3.0f};
 
     }
 
     std::vector<Anchor> anchors;
     for (size_t i = 0; i < NUM_OF_PMS - 1; i++) {
-        Anchor new_anchor(&pms[i], &pms[i + 1], 0.55f);
+        Anchor new_anchor(&pms[i], &pms[i + 1], 0.21f);
         anchors.push_back(new_anchor);
     }
 
