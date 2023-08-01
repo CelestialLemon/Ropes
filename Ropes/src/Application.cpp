@@ -34,7 +34,6 @@ void Application::run() {
             pms[i].pointMassType = PointMassType::STATIC;
         }
         else {
-            
             pms[i].pointMassType = PointMassType::KINEMATIC;
         }
         pms[i].position = {0.3f * i, 0.0f * i};
@@ -82,11 +81,11 @@ void Application::run() {
         }
         satisfyContraints(anchors);
 
-        float systemTotalEnergy = 0.0f;
-        for (size_t i = 0; i < NUM_OF_PMS; i++) {
-            systemTotalEnergy += pms[i].getTotalEnergy(dt);
-        }
-        printf("System Total Energy: %.2f\n", systemTotalEnergy);
+        // float systemTotalEnergy = 0.0f;
+        // for (size_t i = 0; i < NUM_OF_PMS; i++) {
+        //     systemTotalEnergy += pms[i].getTotalEnergy(dt);
+        // }
+        // printf("System Total Energy: %.2f\n", systemTotalEnergy);
         
         m_window.clear();
         // draw here

@@ -5,6 +5,8 @@
 
 #include <SFML/Graphics.hpp>
 #include <unordered_set>
+#include <unordered_map>
+#include <iostream>
 
 enum class PointMassType {
     STATIC = 0,
@@ -90,13 +92,13 @@ void addTension(std::vector<Anchor>& anchors) {
 
             if (distance >= anchor.max_length) {
                 // apply tension
-                const sf::Vector2f N = {0, -1};
+                const vec2 N = {0, -1};
 
                 const float thetaA = angleBetweenVec2(N, dir);
                 const float thetaB = (2 * PI) - thetaA;
 
-                const sf::Vector2f Ta = dir * (-A->mass * G * cosf(thetaA));
-                const sf::Vector2f Tb = -dir * (-B->mass * G * cosf(thetaB));
+                const vec2 Ta = dir * (-A->mass * G * cosf(thetaA));
+                const vec2 Tb = -dir * (-B->mass * G * cosf(thetaB));
 
                 A->AddForce(Ta);
                 B->AddForce(Tb);
@@ -106,13 +108,15 @@ void addTension(std::vector<Anchor>& anchors) {
 }
 
 void satisfyContraints(std::vector<Anchor>& anchors) {
+
+    std::unordered_map<PointMass*, std::vector<vec2>> satisfied_positions;
     for (Anchor& anchor : anchors) {
         PointMass* A = anchor.anchor_point_A;
         PointMass* B = anchor.anchor_point_B;
 
         if ((A->pointMassType == PointMassType::STATIC) &&
             (B->pointMassType == PointMassType::STATIC))
-        { return; }
+        { continue; }
         else 
         {
             vec2 dir = B->position - A->position;
@@ -120,24 +124,72 @@ void satisfyContraints(std::vector<Anchor>& anchors) {
 
             dir = normalize(dir);
 
-            if (distance <= anchor.max_length) return;
+            if (distance <= anchor.max_length) continue;
 
             if ((A->pointMassType == PointMassType::STATIC) &&
                 (B->pointMassType == PointMassType::KINEMATIC)) 
             {
-                B->position += (distance - anchor.max_length) * (-dir);
+                const vec2 satisfied_position = B->position + (distance - anchor.max_length) * (-dir);
+
+                if (satisfied_positions.find(B) != satisfied_positions.end()) {
+                    // pointmass already exists
+                    satisfied_positions[B].push_back(satisfied_position);
+                }
+                else {
+                    std::vector<vec2> positions{satisfied_position};
+                    satisfied_positions[B] = positions;
+                }
             }
             else if ((A->pointMassType == PointMassType::KINEMATIC) &&
                     (B->pointMassType == PointMassType::STATIC)) 
             {
-                A->position += (distance - anchor.max_length) * dir;
+                const vec2 satisfied_position = A->position + (distance - anchor.max_length) * dir;
+                
+                if (satisfied_positions.find(A) != satisfied_positions.end()) {
+                    // pointmass already exists
+                    satisfied_positions[A].push_back(satisfied_position);
+                }
+                else {
+                    std::vector<vec2> positions{satisfied_position};
+                    satisfied_positions[A] = positions;
+                }
             }
             else 
             {
                 const float combinedMass = A->mass + B->mass;
-                A->position += (B->mass / combinedMass) * (distance - anchor.max_length) * dir;
-                B->position += (A->mass / combinedMass) * (distance - anchor.max_length) * -dir;
+                const vec2 satisfied_position_A = A->position + (B->mass / combinedMass) * (distance - anchor.max_length) * dir;
+                const vec2 satisfied_position_B = B->position + (A->mass / combinedMass) * (distance - anchor.max_length) * -dir;
+
+                if (satisfied_positions.find(A) != satisfied_positions.end()) {
+                    // pointmass already exists
+                    satisfied_positions[A].push_back(satisfied_position_A);
+                }
+                else {
+                    std::vector<vec2> positions{satisfied_position_A};
+                    satisfied_positions[A] = positions;
+                }
+
+                if (satisfied_positions.find(B) != satisfied_positions.end()) {
+                    // pointmass already exists
+                    satisfied_positions[B].push_back(satisfied_position_B);
+                }
+                else {
+                    std::vector<vec2> positions{satisfied_position_B};
+                    satisfied_positions[B] = positions;
+                }
             }
         }
+    }
+
+    // std::cout << "size of map: " << satisfied_positions.size() << std::endl;
+    for(auto& satisfied_position: satisfied_positions) {
+        vec2 average_position = {0, 0};
+
+        for(const vec2& position: satisfied_position.second) {
+            average_position += position;
+        }
+
+        average_position /= (float)satisfied_position.second.size();
+        satisfied_position.first->position = average_position;
     }
 }
