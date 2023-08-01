@@ -73,6 +73,38 @@ struct Anchor {
     {}
 };
 
+void addTension(std::vector<Anchor>& anchors) {
+    for (Anchor& anchor: anchors) {
+       PointMass* A = anchor.anchor_point_A;
+        PointMass* B = anchor.anchor_point_B;
+
+        if ((A->pointMassType == PointMassType::STATIC) &&
+            (B->pointMassType == PointMassType::STATIC))
+        { return; }
+        else 
+        {
+            vec2 dir = B->position - A->position;
+            const float distance = vec2Mag(dir);
+
+            dir = normalize(dir);
+
+            if (distance >= anchor.max_length) {
+                // apply tension
+                const sf::Vector2f N = {0, -1};
+
+                const float thetaA = angleBetweenVec2(N, dir);
+                const float thetaB = (2 * PI) - thetaA;
+
+                const sf::Vector2f Ta = dir * (-A->mass * G * cosf(thetaA));
+                const sf::Vector2f Tb = -dir * (-B->mass * G * cosf(thetaB));
+
+                A->AddForce(Ta);
+                B->AddForce(Tb);
+            }
+        } 
+    }
+}
+
 void satisfyContraints(std::vector<Anchor>& anchors) {
     for (Anchor& anchor : anchors) {
         PointMass* A = anchor.anchor_point_A;

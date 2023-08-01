@@ -37,14 +37,14 @@ void Application::run() {
             
             pms[i].pointMassType = PointMassType::KINEMATIC;
         }
-        pms[i].position = {0.3f * i, 0.3f * i};
-        pms[i].prevPosition = {0.3f * i, 0.3f * i};
+        pms[i].position = {0.3f * i, 0.0f * i};
+        pms[i].prevPosition = {0.3f * i, 0.0f * i};
 
     }
 
     std::vector<Anchor> anchors;
     for (size_t i = 0; i < NUM_OF_PMS - 1; i++) {
-        Anchor new_anchor(&pms[i], &pms[i + 1], 0.45f);
+        Anchor new_anchor(&pms[i], &pms[i + 1], 0.55f);
         anchors.push_back(new_anchor);
     }
 
@@ -69,9 +69,12 @@ void Application::run() {
         const float dt = clock.restart().asSeconds();
         // const float dt = 0.01;
         // game updates
+
+        // gravity
         for (size_t i = 0; i < NUM_OF_PMS; i++) {
             pms[i].AddForce({0, -pms[i].mass * G});
         }
+        // addTension(anchors);
 
         for (size_t i = 0; i < NUM_OF_PMS; i++) {
             pms[i].updatePosition(dt);
