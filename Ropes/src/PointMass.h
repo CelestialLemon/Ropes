@@ -43,12 +43,12 @@ struct PointMass {
     }
 
     void updatePosition(float dt) {
-        if (pointMassType == PointMassType::STATIC) return;
-
-        velocity = (position - prevPosition);
-        prevPosition = position;
-        position = position + velocity + (force / mass) * dt * dt;
-        force = {0, 0};
+        if (pointMassType == PointMassType::KINEMATIC) {
+            velocity = (position - prevPosition);
+            prevPosition = position;
+            position = position + velocity + (force / mass) * dt * dt;
+            force = {0, 0};
+        }
         sprite.setPosition(position);
     }
 
@@ -80,7 +80,7 @@ void satisfyContraints(std::vector<Anchor>& anchors) {
 
         if ((A->pointMassType == PointMassType::STATIC) &&
             (B->pointMassType == PointMassType::STATIC))
-        { return; }
+        { continue; }
         else 
         {
             vec2 dir = B->position - A->position;
@@ -88,7 +88,7 @@ void satisfyContraints(std::vector<Anchor>& anchors) {
 
             dir = normalize(dir);
 
-            if (distance <= anchor.max_length) return;
+            if (distance <= anchor.max_length) continue;
 
             if ((A->pointMassType == PointMassType::STATIC) &&
                 (B->pointMassType == PointMassType::KINEMATIC)) 
