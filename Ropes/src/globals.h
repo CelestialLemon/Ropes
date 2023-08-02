@@ -16,3 +16,6 @@ const unsigned int SCREEN_HEIGHT = 1080;
 const float SCREEN_WIDTH_WORLD = 9.0f;
 // height of the screen in world units, 9 metres
 const float SCREEN_HEIGHT_WORLD = 9.0f;
+
+// number of steps using in the physics simulation
+const size_t PHYSICS_SUB_STEPS = 4;

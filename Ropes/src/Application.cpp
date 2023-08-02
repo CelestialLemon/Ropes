@@ -36,14 +36,14 @@ void Application::run() {
         else {
             pms[i].pointMassType = PointMassType::KINEMATIC;
         }
-        pms[i].position = {0.18f * i, 3.0f};
-        pms[i].prevPosition = {0.18f * i, 3.0f};
+        pms[i].position = {0.1f * i, 3.0f + 0.1f * i};
+        pms[i].prevPosition = {0.1f * i, 3.0f + 0.1f * i};
 
     }
 
     std::vector<Anchor> anchors;
     for (size_t i = 0; i < NUM_OF_PMS - 1; i++) {
-        Anchor new_anchor(&pms[i], &pms[i + 1], 0.21f);
+        Anchor new_anchor(&pms[i], &pms[i + 1], 0.2f);
         anchors.push_back(new_anchor);
     }
 
@@ -70,22 +70,24 @@ void Application::run() {
         // game updates
 
         // gravity
-        for (size_t i = 0; i < NUM_OF_PMS; i++) {
-            pms[i].AddForce({0, -pms[i].mass * G});
-        }
-        addTension(anchors);
+        for (size_t ss = 0; ss < PHYSICS_SUB_STEPS; ss++) {
+            for (size_t i = 0; i < NUM_OF_PMS; i++) {
+                pms[i].AddForce({0, -pms[i].mass * G});
+            }
+            // addTension(anchors);
 
-        for (size_t i = 0; i < NUM_OF_PMS; i++) {
-            pms[i].updatePosition(dt);
-            // pms[i].updateVelocity(dt);
+            for (size_t i = 0; i < NUM_OF_PMS; i++) {
+                pms[i].updatePosition(dt / (float)PHYSICS_SUB_STEPS);
+                // pms[i].updateVelocity(dt);
+            }
+            satisfyContraints(anchors);
         }
-        satisfyContraints(anchors);
 
-        // float systemTotalEnergy = 0.0f;
-        // for (size_t i = 0; i < NUM_OF_PMS; i++) {
-        //     systemTotalEnergy += pms[i].getTotalEnergy(dt);
-        // }
-        // printf("System Total Energy: %.2f\n", systemTotalEnergy);
+        float systemTotalEnergy = 0.0f;
+        for (size_t i = 0; i < NUM_OF_PMS; i++) {
+            systemTotalEnergy += pms[i].getTotalEnergy(dt);
+        }
+        printf("System Total Energy: %.2f\n", systemTotalEnergy);
         
         m_window.clear();
         // draw here
