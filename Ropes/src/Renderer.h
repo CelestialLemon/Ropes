@@ -6,6 +6,7 @@
 class Renderer {
     private:
     sf::RenderWindow& m_window;
+    float zoom;
 
     // convert world co-ordinates to screen co-ordinates to draw on screen
     sf::Vector2f worldToScreen(sf::Vector2f world_position);
@@ -15,6 +16,8 @@ class Renderer {
 
     public:
     Renderer(sf::RenderWindow& window);
+    void increaseZoom();
+    void decreaseZoom();
     void render(Sprite& sprite);
     void render(const sf::VertexArray& va);
 };

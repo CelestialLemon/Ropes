@@ -3,9 +3,19 @@
 
 
 Renderer::Renderer(sf::RenderWindow& window)
-: m_window(window) {}
+: m_window(window), zoom(1.0f) {}
+
+void Renderer::increaseZoom() {
+    zoom *= 1.1;
+}
+
+void Renderer::decreaseZoom() {
+    zoom /= 1.1;
+}
 
 sf::Vector2f Renderer::worldToScreen(sf::Vector2f worldPosition) {
+    // scale by inverse zoom
+    worldPosition *= 1.0f / zoom;
     // world position is in range -0.5W -> 0.5W, -0.5H -> 0.5H
     // convert it to 0 -> W, 0 -> H
     worldPosition += sf::Vector2f(SCREEN_WIDTH_WORLD / 2, SCREEN_HEIGHT_WORLD / 2);
@@ -39,6 +49,9 @@ void Renderer::render(Sprite& sprite) {
     auto actualPosition = spriteRef.getPosition();
     // set temporary different position
     spriteRef.setPosition(screenPosition);
+
+    // scale the sprite depending on zoom level
+    spriteRef.setScale(sf::Vector2f(1.0f / zoom, 1.0f / zoom));
 
     // draw at temporary position
     m_window.draw(spriteRef);

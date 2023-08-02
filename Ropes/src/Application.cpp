@@ -22,7 +22,7 @@ void Application::run() {
     Renderer renderer(m_window);
 
     sf::Texture pointTexture;
-    pointTexture.loadFromFile("./res/images/point_03.png");
+    pointTexture.loadFromFile("./res/images/point_02.png");
 
     std::vector<PointMass> pms(NUM_OF_PMS);
 
@@ -58,6 +58,13 @@ void Application::run() {
         {
             if (event.type == sf::Event::Closed)
                 m_window.close();
+
+            if (event.type == sf::Event::MouseWheelScrolled) {
+                if (event.mouseWheelScroll.delta == -1)
+                    renderer.increaseZoom();
+                else if (event.mouseWheelScroll.delta == 1)
+                    renderer.decreaseZoom();
+            }
         }
 
         // close app on escape
@@ -83,11 +90,11 @@ void Application::run() {
             satisfyContraints(anchors);
         }
 
-        float systemTotalEnergy = 0.0f;
-        for (size_t i = 0; i < NUM_OF_PMS; i++) {
-            systemTotalEnergy += pms[i].getTotalEnergy(dt);
-        }
-        printf("System Total Energy: %.2f\n", systemTotalEnergy);
+        // float systemTotalEnergy = 0.0f;
+        // for (size_t i = 0; i < NUM_OF_PMS; i++) {
+        //     systemTotalEnergy += pms[i].getTotalEnergy(dt);
+        // }
+        // printf("System Total Energy: %.2f\n", systemTotalEnergy);
         
         m_window.clear();
         // draw here
