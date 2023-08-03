@@ -1,3 +1,4 @@
+#pragma once
 #include <SFML/Graphics.hpp>
 
 class Application {
@@ -8,6 +9,7 @@ class Application {
     private:
     unsigned int m_resX;
     unsigned int m_resY;
+    bool is_editing;
 
     sf::RenderWindow m_window;
 };

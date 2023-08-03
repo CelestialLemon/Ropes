@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "globals.h"
 #include "vector_helper.h"
+#include "editor.h"
 
 #include <iostream>
 #include <deque>
@@ -11,10 +12,10 @@
 Application::Application(unsigned int resX, unsigned int resY): 
 m_resX(resX), 
 m_resY(resY),
+is_editing(true),
 m_window(sf::VideoMode(resX, resY), "Ropes")
 {}
 
-const size_t NUM_OF_PMS = 25;
 
 void Application::run() {
 
@@ -24,28 +25,10 @@ void Application::run() {
     sf::Texture pointTexture;
     pointTexture.loadFromFile("./res/images/point_02.png");
 
-    std::vector<PointMass> pms(NUM_OF_PMS);
-
-    for (size_t i = 0; i < NUM_OF_PMS; i++) {
-        pms[i].sprite.setSpriteTexture(pointTexture);
-        pms[i].mass = 1;
-        
-        if (i == 0) {
-            pms[i].pointMassType = PointMassType::STATIC;
-        }
-        else {
-            pms[i].pointMassType = PointMassType::KINEMATIC;
-        }
-        pms[i].position = {0.1f * i, 3.0f + 0.1f * i};
-        pms[i].prevPosition = {0.1f * i, 3.0f + 0.1f * i};
-
-    }
-
+    std::vector<PointMass> pms;
     std::vector<Anchor> anchors;
-    for (size_t i = 0; i < NUM_OF_PMS - 1; i++) {
-        Anchor new_anchor(&pms[i], &pms[i + 1], 0.2f);
-        anchors.push_back(new_anchor);
-    }
+
+    PointMass* anchor_first_point = nullptr;
 
     sf::Clock clock;
 
@@ -65,6 +48,48 @@ void Application::run() {
                 else if (event.mouseWheelScroll.delta == 1)
                     renderer.decreaseZoom();
             }
+
+            if (event.type == sf::Event::KeyReleased) {
+                if (event.key.code == sf::Keyboard::Space) {
+                    is_editing = !is_editing;
+                }
+            }
+
+            if (is_editing) {
+                // left button released, place pointmass
+                if (event.type == sf::Event::MouseButtonReleased) {
+                    if (event.mouseButton.button == sf::Mouse::Left) {
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+                            editor_place_pm(pms, renderer.getMouseWorldPosition(), pointTexture, PointMassType::STATIC);
+                        }
+                        else {
+                            editor_place_pm(pms, renderer.getMouseWorldPosition(), pointTexture, PointMassType::KINEMATIC);
+                        }
+                    }
+                }
+
+                if (event.type == sf::Event::MouseButtonReleased) {
+                    if (event.mouseButton.button == sf::Mouse::Right) {
+                        PointMass* closest_pm = find_closest_pointmass(pms, renderer.getMouseWorldPosition());
+
+                        if (anchor_first_point == nullptr) {
+                            anchor_first_point = closest_pm;
+                            anchor_first_point->sprite.setColor(sf::Color::Blue);
+                        }
+                        else {
+
+                            if (closest_pm != anchor_first_point) {
+                                const float anchor_max_distance = vec2Mag(closest_pm->position - anchor_first_point->position);
+                                Anchor new_anchor(anchor_first_point, closest_pm, anchor_max_distance);
+                                anchors.push_back(new_anchor);
+                                
+                            }
+                            anchor_first_point->sprite.setColor(sf::Color::White);
+                            anchor_first_point = nullptr;
+                        }
+                    }
+                }
+            }
         }
 
         // close app on escape
@@ -76,29 +101,26 @@ void Application::run() {
         // const float dt = 0.01;
         // game updates
 
-        // gravity
-        for (size_t ss = 0; ss < PHYSICS_SUB_STEPS; ss++) {
-            for (size_t i = 0; i < NUM_OF_PMS; i++) {
-                pms[i].AddForce({0, -pms[i].mass * G});
-            }
-            // addTension(anchors);
+        if (!is_editing)
+        {
+            // run simulation
+            for (size_t ss = 0; ss < PHYSICS_SUB_STEPS; ss++) {
+                for (size_t i = 0; i < pms.size(); i++) {
+                    pms[i].AddForce({0, -pms[i].mass * G});
+                }
+                // addTension(anchors);
 
-            for (size_t i = 0; i < NUM_OF_PMS; i++) {
-                pms[i].updatePosition(dt / (float)PHYSICS_SUB_STEPS);
-                // pms[i].updateVelocity(dt);
+                for (size_t i = 0; i < pms.size(); i++) {
+                    pms[i].updatePosition(dt / (float)PHYSICS_SUB_STEPS);
+                    // pms[i].updateVelocity(dt);
+                }
+                satisfyContraints(anchors);
             }
-            satisfyContraints(anchors);
         }
 
-        // float systemTotalEnergy = 0.0f;
-        // for (size_t i = 0; i < NUM_OF_PMS; i++) {
-        //     systemTotalEnergy += pms[i].getTotalEnergy(dt);
-        // }
-        // printf("System Total Energy: %.2f\n", systemTotalEnergy);
-        
         m_window.clear();
         // draw here
-        for (size_t i = 0; i < NUM_OF_PMS; i++) {
+        for (size_t i = 0; i < pms.size(); i++) {
             renderer.render(pms[i].sprite);
         }
 

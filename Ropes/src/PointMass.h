@@ -29,7 +29,9 @@ struct PointMass {
     velocity ({0, 0}),
     pointMassType(PointMassType::KINEMATIC),
     sprite(Sprite()),
-    force({0, 0}) {} 
+    force({0, 0}) {
+        sprite.setPosition(position);
+    } 
 
     PointMass(float _mass, vec2 _position, PointMassType _pointMassType = PointMassType::KINEMATIC): 
     mass(_mass), 
@@ -38,7 +40,9 @@ struct PointMass {
     pointMassType(_pointMassType),
     sprite(Sprite()),
     velocity({0, 0}),
-    force({0, 0}) {}
+    force({0, 0}) {
+        sprite.setPosition(position);
+    }
 
     void AddForce(vec2 _force) {
         force += _force;

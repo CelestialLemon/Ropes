@@ -13,9 +13,19 @@ void Renderer::decreaseZoom() {
     zoom /= 1.1;
 }
 
-sf::Vector2f Renderer::worldToScreen(sf::Vector2f worldPosition) {
+vec2 Renderer::getMouseWorldPosition() const {
+    sf::Vector2i mouse_screen_position = sf::Mouse::getPosition(m_window);
+    // invert y axis
+    return screenToWorld((vec2)mouse_screen_position); 
+}
+
+sf::Vector2f Renderer::worldToScreen(sf::Vector2f worldPosition) const {
     // scale by inverse zoom
     worldPosition *= 1.0f / zoom;
+
+    // invert y-axis so that positive points upwards
+    worldPosition.y *= -1.0f;
+
     // world position is in range -0.5W -> 0.5W, -0.5H -> 0.5H
     // convert it to 0 -> W, 0 -> H
     worldPosition += sf::Vector2f(SCREEN_WIDTH_WORLD / 2, SCREEN_HEIGHT_WORLD / 2);
@@ -34,11 +44,25 @@ sf::Vector2f Renderer::worldToScreen(sf::Vector2f worldPosition) {
     return screenPosition;
 }
 
+vec2 Renderer::screenToWorld(vec2 screen_position) const {
+    // convert screen co-ordinates in the space 0 -> 1
+    screen_position.x /= (float)SCREEN_WIDTH;
+    screen_position.y /= (float)SCREEN_HEIGHT;
+
+    // convert to range -0.5 to 0.5
+    screen_position.x -= 0.5f;
+    screen_position.y -= 0.5f;
+
+    // convert to world co-ordinates by multiplying by dimmensions
+    return vec2(
+        screen_position.x * SCREEN_WIDTH_WORLD, 
+        screen_position.y * SCREEN_HEIGHT_WORLD * -1.0f
+    );
+}
+
 void Renderer::render(Sprite& sprite) {
     // get sprite position in world units
     sf::Vector2f worldPosition = sprite.getPosition();
-    // invert y-axis so that positive points upwards
-    worldPosition.y *= -1;
 
     // convert world co-ordinates to screen co-ordinates
     const sf::Vector2f screenPosition = worldToScreen(worldPosition);
@@ -66,7 +90,6 @@ void Renderer::render(const sf::VertexArray& va) {
 
     for(size_t i = 0; i < val.getVertexCount(); i++) {
         auto& vertex = val[i];
-        vertex.position.y *= -1;
         vertex.position = worldToScreen(vertex.position);
     }
 
